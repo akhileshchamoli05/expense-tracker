@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import axios from 'axios';
+// import {firestore} from '../firebase';
+import React, { useState, useEffect } from 'react';
 
 const ExpenseForm = () => {
   console.log("Hello");
@@ -13,13 +15,38 @@ const ExpenseForm = () => {
       description,
       category,
     };
-    
-    setExpenses([...expenses, newExpense]);
-    setMoneySpent('');
-    setDescription('');
-    setCategory('');
+  
+    axios.post('https://expense-tracker-8f63f-default-rtdb.firebaseio.com/expenses.json', newExpense)
+      .then(response => {
+        console.log("Expense added successfully:", response.data);
+  
+        // Update local state
+        setExpenses([...expenses, newExpense]);
+        setMoneySpent('');
+        setDescription('');
+        setCategory('');
+      })
+      .catch(error => {
+        console.error("Error adding expense:", error);
+      });
   };
   
+
+  useEffect(() => {
+    // Using axios to fetch expenses from Firebase
+    axios.get('https://expense-tracker-8f63f-default-rtdb.firebaseio.com/expenses.json')
+      .then(response => {
+        const fetchedExpenses = response.data;
+        if (fetchedExpenses) {
+          const expensesArray = Object.values(fetchedExpenses);
+          setExpenses(expensesArray);
+        }
+      })
+      .catch(error => {
+        console.error("Error fetching expenses:", error);
+      });
+  }, []); // Empty dependency array ensures the effect runs only once, on mount
+
   return (
     <div>
       <h2>Expense Tracker</h2>
